@@ -1,0 +1,52 @@
+name: verify yarn release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to verify
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.17.1
+
+      - name: Install Yarn Classic
+        run: npm install --global yarn@1.22.22
+
+      - name: Create React Native host fixture
+        run: |
+          mkdir host
+          cd host
+          npm init -y
+          npm pkg set private=true
+          npm pkg set dependencies.react=19.2.0
+          npm pkg set dependencies.react-native=0.83.0
+          npm pkg set dependencies.react-native-blob-util=0.19.11
+
+      - name: Install from GitHub Release
+        working-directory: host
+        run: |
+          curl -fLO "https://github.com/keystonecommerce/liwip-commerce-sdk-releases/releases/download/${RELEASE_TAG}/liwip-store-install.mjs"
+          node liwip-store-install.mjs --package-manager yarn --yes
+
+      - name: Verify Yarn dependency tree
+        working-directory: host
+        run: |
+          yarn list --pattern '@liwip/(store-core|react-native-cashfree|react-native-store)'
+          node -e "const manifest=require('./package.json'); const version=process.env.RELEASE_TAG.replace(/^v/, ''); const names=['@liwip/store-core','@liwip/react-native-cashfree','@liwip/react-native-store']; if (manifest.resolutions) throw new Error('Yarn resolutions must not be required'); for (const name of names) { const installed=require('./node_modules/'+name+'/package.json').version; if (installed !== version) throw new Error(name+' resolved to '+installed); const source=manifest.dependencies[name]; if (!source.includes('/releases/download/'+process.env.RELEASE_TAG+'/')) throw new Error(name+' did not resolve from the GitHub Release'); }"
