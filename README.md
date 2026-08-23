@@ -8,7 +8,7 @@ Development source, issues and CI are maintained in a private repository.
 From the host React Native project:
 
 ```sh
-curl -fLO https://github.com/keystonecommerce/liwip-commerce-sdk-releases/releases/download/v0.1.0-dev.3/liwip-store-install.mjs
+curl -fLO https://github.com/keystonecommerce/liwip-commerce-sdk-releases/releases/download/v0.1.0-dev.5/liwip-store-install.mjs
 node liwip-store-install.mjs
 ```
 
