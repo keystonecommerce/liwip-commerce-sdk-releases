@@ -140,13 +140,6 @@ Both commands refuse a reused dev number, or a prod release with no matching
 dev release. They check with `gh release view`, which only reads. `--force`
 skips the check.
 
-Publishing a release runs `.github/workflows/verify-yarn-release.yml`. The
-workflow installs the release into a fresh Yarn host. It checks that the
-installer's baked tag matches the release and that every package resolves
-from the release at the tag's version. It also checks that the store carries
-the tag's partner layer. To re-run it: **Actions → verify yarn release → Run
-workflow** with the tag.
-
 ## Support
 
 - Integration guide: <https://sdk.liwip.com>
